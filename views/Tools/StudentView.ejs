@@ -1,0 +1,43 @@
+<!-- StudentView.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>View_Schedules</title>
+</head>
+<link rel="stylesheet" href="/css/tablestyle.css">
+<body class="body-with-bg">
+  <div class="container" id="heading">ClassRooms</div> 
+
+  <% let rooms = {}; %>
+
+  <% schedules.forEach((schedule) => {
+    // Group schedules by room
+    if (!rooms[schedule.room]) {
+      rooms[schedule.room] = [];
+    }
+    rooms[schedule.room].push(schedule);
+  }); %>
+
+  <% Object.keys(rooms).forEach((room) => { %>
+    <h2><%= room %></h2>
+    <table id="schedule">
+      <tr>
+        <th>S.No.</th>
+        <th>Section</th>
+        <th>Subject</th>
+        <th>Schedule</th>
+      </tr>
+      <% rooms[room].forEach((schedule, index) => { %>
+        <tr>
+          <td><%= index + 1 %></td>
+          <td><%= schedule.section %></td>
+          <td><%= schedule.subject %></td>
+          <td><%= schedule.time %></td>
+        </tr>
+      <% }); %>
+    </table>
+  <% }); %>
+
+  <!-- No Edit button for students -->
+</body>
+</html>

@@ -1,0 +1,122 @@
+/* Apply background color to the body with a specific class */
+body.body-with-bg {
+  background-color: #f9f9f9;
+}
+
+/* Main container styles */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+th, td {
+  padding: 12px;
+  border: 1px solid #dddddd;
+}
+
+/* Header styles */
+thead {
+  background-color: #f2f2f2;
+}
+
+th {
+  font-weight: bold;
+  text-align: left;
+}
+
+/* Alternating row colors */
+tbody tr:nth-child(even) {
+  background-color: #f8f8f8;
+}
+
+/* Cell text alignment */
+td {
+  text-align: left;
+}
+
+/* Hover effect */
+tbody tr:hover {
+  background-color: #e5e5e5;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Main heading styles */
+#heading {
+  text-align: center;
+  font-size: 50px;
+  font-weight: 300;
+  color: #222;
+  letter-spacing: 1px;
+  font-family: sans-serif;
+  /* margin-top: 20px; */
+}
+
+/* Underline effect */
+#heading:before, #heading:after {
+  content: "";
+  display: block;
+  border-bottom: 2px solid blue;
+  margin: 20px auto;
+  width: 50px;
+}
+
+/* Responsive table */
+@media (max-width: 600px) {
+  table {
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 8px;
+  }
+}
+h1,h2{
+  text-align: center;
+  font-size: 30px;
+font-weight: 600;
+background-image: linear-gradient(to left, blue, #b393d3);
+color: transparent;
+background-clip: text;
+-webkit-background-clip: text;
+}
+
+/* Styles for primary buttons */
+.button-primary {
+  /* Add your primary button styles here */
+  /* For example: */
+  background-color: green;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+/* Rounded buttons */
+.button-round {
+  /* Add your rounded button styles here */
+  /* For example: */
+  border-radius: 50px;
+}
+
+/* Additional styles for specific buttons */
+#save-schedule {
+  /* Add your styles for the Save Schedule button */
+  /* For example: */
+  background-color: #28a745;
+}
+
+/* Hide Save Schedule button by default */
+#save-schedule {
+  display: none;
+}

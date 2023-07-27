@@ -1,0 +1,32 @@
+<!-- StudentView.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Your head content here -->
+</head>
+<link rel="stylesheet" href="style.css">
+<body>
+  <h1>ClassRooms</h1>
+
+  <!-- Table to display the schedule (read-only for students) -->
+  <table id="schedule">
+
+    <tr>
+        <th>S.No.</th> 
+       <th>Room</th>
+       <th>Subject</th>
+       <th>Schedule</th>
+   </tr>
+    <% schedules.forEach((schedule) => { %>
+      <tr>
+          <td><%= schedule.serialNo %></td>
+        <td><%= schedule.room %></td>
+        <td><%= schedule.subject %></td>
+        <td><%= schedule.time %></td>
+      </tr>
+    <% }); %>
+  </table>
+
+  <!-- No Edit button for students -->
+</body>
+</html>

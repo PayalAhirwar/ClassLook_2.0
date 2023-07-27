@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit_Schedules</title>
+    <link rel="stylesheet" href="/css/tablestyle.css">
+</head>
+<body>
+    <div id="heading">ClassRooms</div>
+
+    <!-- Table to display the schedules -->
+    <% const schedulesByRoom = {}; %>
+    <% schedules.forEach((schedule) => { %>
+        <% if (!schedulesByRoom[schedule.room]) { %>
+            <% schedulesByRoom[schedule.room] = []; %>
+        <% } %>
+        <% schedulesByRoom[schedule.room].push(schedule); %>
+    <% }); %>
+
+    <% for (const room in schedulesByRoom) { %>
+        <h1><%= room %></h1>
+        <table id="schedule">
+            <tr>
+                <th>S.No.</th>
+                <th>Section</th>
+                <th>Subject</th>
+                <th>Schedule</th>
+                <th>Action</th>
+            </tr>
+            <% schedulesByRoom[room].forEach((schedule) => { %>
+                <tr>
+                    <td contenteditable="false"><%= schedule.serialNo %></td>
+                    <td contenteditable="false"><%= schedule.section %></td>
+                    <td contenteditable="false"><%= schedule.subject %></td>
+                    <td contenteditable="false"><%= schedule.time %></td>
+                    <td>
+                        <button class="delete-btn" data-id="<%= schedule._id %>">Delete</button>
+                        <!-- Add any other action buttons here -->
+                    </td>
+                </tr>
+            <% }); %>
+        </table>
+
+        <!-- Form for adding a new schedule for this room -->
+        <form class="add-schedule-form" action="/Tools/AddSchedule" method="POST">
+            <input type="hidden" name="room" value="<%= room %>">
+            <input type="text" name="serialNo" placeholder="S.No">
+            <input type="text" name="section"placeholder="Section" >
+            <input type="text" name="subject" placeholder="Subject">
+            <input type="text" name="time" placeholder="Time">
+            <button class="button-primary button-round" type="submit">Add Schedule</button>
+        </form>
+    <% } %>
+
+    <!-- Edit and Save buttons --> 
+    <button class="button-primary button-round" id="edit-schedule">Edit Schedule</button>
+    <button class="button-primary button-round" id="save-schedule" style="display:none">Save Schedule</button> 
+
+    <script>
+        // Get the table and the edit button
+        const scheduleTable = document.getElementById('schedule');
+        const editButton = document.getElementById('edit-schedule');
+        const saveButton = document.getElementById('save-schedule');
+
+        // Variable to track if the table is in edit mode
+        let isEditMode = false;
+
+        // Function to toggle the table's editable state
+        function toggleEditMode() {
+            const cells = scheduleTable.getElementsByTagName('td');
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].contentEditable = isEditMode;
+            }
+        }
+
+        // Add an event listener to the delete buttons
+        const deleteButtons = document.getElementsByClassName('delete-btn');
+        for (const deleteButton of deleteButtons) {
+            deleteButton.addEventListener('click', () => {
+                const scheduleId = deleteButton.dataset.id;
+                deleteSchedule(scheduleId);
+            });
+        }
+
+        // Function to delete the schedule from the database
+        function deleteSchedule(scheduleId) {
+            fetch(`/Tools/DeleteSchedule/${scheduleId}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // You can handle the response from the server here if needed
+                // Reload the page to show the updated schedule
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error deleting schedule:', error);
+                alert('An error occurred while deleting the schedule. Please try again.');
+            });
+        }
+
+        // Add an event listener to the edit button
+        editButton.addEventListener('click', () => {
+            isEditMode = !isEditMode;
+            toggleEditMode();
+
+            // Show/hide the buttons based on the edit mode
+            if (isEditMode) {
+                editButton.style.display = 'none';
+                saveButton.style.display = 'block';
+            } else {
+                editButton.style.display = 'block';
+                saveButton.style.display = 'none';
+            }
+        });
+
+        // Add an event listener to the save button
+        saveButton.addEventListener('click', () => {
+            isEditMode = false;
+            toggleEditMode();
+
+            // Get the updated schedule data from the table and create an array to store it
+            const updatedSchedules = [];
+            const rows = scheduleTable.getElementsByTagName('tr');
+            for (let i = 1; i < rows.length; i++) { // Start from index 1 to skip the table header row
+                const cells = rows[i].getElementsByTagName('td');
+                const serialNo = cells[0].innerText;
+                const section = cells[1].innerText;
+                const subject = cells[2].innerText;
+                const time = cells[3].innerText;
+                const room = rows[i].getElementsByTagName('h1')[0].innerText.trim(); // Get room name from the h1 element of the row
+                updatedSchedules.push({ serialNo,section, subject, time, room });
+            }
+
+            // Send the updated schedule data to the server via a POST request
+            fetch('/Tools/UpdateSchedule', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ schedules: updatedSchedules })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // You can handle the response from the server here if needed
+                // Hide the save button
+                saveButton.style.display = 'none';
+                // Show the edit button
+                editButton.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error updating schedule data:', error);
+                alert('An error occurred while saving the schedule. Please try again.');
+            });
+        });
+
+        // Add event listeners to the "Add Schedule" forms
+        const addScheduleForms = document.getElementsByClassName('add-schedule-form');
+        for (const addScheduleForm of addScheduleForms) {
+            addScheduleForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const newSerialNo = addScheduleForm.querySelector('input[name="serialNo"]').value;
+                const newSection = addScheduleForm.querySelector('input[name="section"]').value;
+                const newRoom = addScheduleForm.querySelector('input[name="room"]').value;
+                const newSubject = addScheduleForm.querySelector('input[name="subject"]').value;
+                const newTime = addScheduleForm.querySelector('input[name="time"]').value;
+                const newSchedule = { serialNo: newSerialNo,section:newSection, room: newRoom, subject: newSubject, time: newTime };
+
+                // Send the new schedule data to the server via a POST request
+                fetch('/Tools/AddSchedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(newSchedule)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // You can handle the response from the server here if needed
+                    // Reload the page to show the updated schedule
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error adding new schedule:', error);
+                    alert('An error occurred while adding the schedule. Please try again.');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
+

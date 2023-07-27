@@ -1,0 +1,43 @@
+/* Custom styles for the navbar */
+header .navbar {
+    /* Add your navbar styles here */
+    /* For example: */
+    padding: 10px 0;
+  }
+  
+  header .navbar-brand img {
+    /* Adjust the logo size as needed */
+    width: 30px;
+    height: 30px;
+  }
+  
+  /* Styling for the main heading */
+  main .container .main-heading {
+    font-size: 36px;
+    font-weight: bold;
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    text-align: center;
+    margin: 20px 0;
+    color: #333;
+    letter-spacing: 2px;
+  }
+  
+  /* Additional styles for the page content */
+  main .container {
+    /* Add styles for the container class if needed */
+    /* For example: */
+    background-color: #f2f2f2;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .flex-box2 {
+    /* Add your flex-box2 styles here */
+    /* For example: */
+    text-align: center;
+    padding: 20px;
+  }
+  
+  /* Rest of your custom styles for the page content */
+  /* ... */
+  
