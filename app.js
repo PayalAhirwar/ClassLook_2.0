@@ -18,37 +18,6 @@ const db = mongoose.connection;
 db.on("error",()=>{console.log("error in conection");})
 db.once('open',()=>{console.log("Connected");})
 
-// // Set up the model for the schedule
-// const Schedule = mongoose.model('Schedule', {
-//     room: String,
-//     schedule: String,
-//   });
-
-//   const schedulesData = [
-//     { room: 'GS3', schedule: 'Some schedule data for GS3' },
-//     { room: 'GS4', schedule: 'Some schedule data for GS4' },
-//     // Add other schedule data objects here...
-//   ];
-
-
-//   Router.get('/Tools/Edit.ejs', (req, res) => {
-//     res.render('Tools/Edit', { schedules: schedulesData });
-//   });
-
-// Set the path to the 'views' folder
-// const viewsPath = path.join(__dirname, 'RegisterLogin', 'views');
-
-// Function to fetch schedules data from the database
-// async function fetchedSchedules() {
-//     try {
-//       const schedules = await Schedule.find(); // Fetch all schedules from the database
-//       return schedules;
-//     } catch (err) {
-//       console.error('Error fetching schedules from the database:', err);
-//       return []; // Return an empty array or handle the error appropriately
-//     }
-// }
-
 // app.set('views', viewsPath);
 app.set('view engine','ejs')
 
@@ -64,10 +33,10 @@ app.get('/homeStudent.ejs', (req, res) => {
      res.render('hello'); // This will look for home.ejs in the views folder
  })
 
-//  app.get('/Tools/StudentView.ejs', (req, res) => {
-// //     res.render('Tools/StudentView'); // This will look for home.ejs in the views folder
-//  })
-
+  app.get('/Tools/About.ejs', (req, res) => {
+     res.render('Tools/About'); // This will look for home.ejs in the views folder//
+      })
+  
 // app.get('/Tools/window.ejs', (req, res) => {
 //     res.render('Tools/window'); // This will look for home.ejs in the views folder
 // })

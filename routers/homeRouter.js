@@ -75,49 +75,39 @@ const Schedule = mongoose.model('Schedule', {
 });
 
 
-// Handle the GET request for rendering the edit page and handling the POST request to save the edited schedule
-Router.route('/Tools/Edit.ejs')
-  .get(async (req, res) => {
-    try {
-      // Fetch the schedule data from the database and pass it to the edit.ejs template
-      const schedules = await Schedule.find({});
-      res.render('Tools/Edit', { schedules });
-      console.log(schedules);
-    } catch (err) {
-      console.error('Error fetching schedule data from the database:', err);
-      res.status(500).send('An error occurred. Please try again later.');
-    }
-  })
-  .post(express.json(), async (req, res) => {
-    // Extract the updated schedule data from the request body
-    const { schedules } = req.body;
+  // Handle the GET request for rendering the edit page
+Router.get('/Tools/Edit.ejs', async (req, res) => {
+  try {
+    // Fetch the schedule data from the database and pass it to the edit.ejs template
+    const schedules = await Schedule.find({});
+    res.render('Tools/Edit', { schedules });
     console.log(schedules);
+  } catch (err) {
+    console.error('Error fetching schedule data from the database:', err);
+    res.status(500).send('An error occurred. Please try again later.');
+  }
+});
 
-    try {
-      // Loop through the updated schedules and update the database
-      for (const { serialNo,section, room, subject, time } of schedules) {
-        await Schedule.findOneAndUpdate(
-          {serialNo: serialNo},
-          {
-            $set: {
-              section,
-              room,
-              subject,
-              time,
-            },
-          },
-          { new: true }
-        );
-      }
-      console.log(schedules);
-      // Respond with a success message
-      res.json({ message: 'Schedule data updated successfully' });
-    } catch (err) {
-      console.error('Error updating schedule data in the database:', err);
-      // Send an error response
-      res.status(500).json({ error: 'An error occurred while saving the schedule. Please try again.' });
-    }
-  });
+// Handle the POST request to update schedules
+Router.post('/Tools/UpdateSchedule', express.json(), async (req, res) => {
+  const { schedules } = req.body;
+
+  try {
+    // Clear existing schedules for each room
+    const rooms = schedules.map((schedule) => schedule.room);
+    await Schedule.deleteMany({ room: { $in: rooms } });
+
+    // Insert the updated schedules for each room
+    await Schedule.insertMany(schedules);
+
+    // Respond with a success message
+    res.json({ message: 'Schedule data updated successfully' });
+  } catch (err) {
+    console.error('Error updating schedule data in the database:', err);
+    // Send an error response
+    res.status(500).json({ error: 'An error occurred while saving the schedule. Please try again.' });
+  }
+});
 
 
 

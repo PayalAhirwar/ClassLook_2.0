@@ -20,8 +20,8 @@
     <% }); %>
 
     <% for (const room in schedulesByRoom) { %>
-        <h1><%= room %></h1>
-        <table id="schedule">
+        <div><h1><%= room %></h1></div>
+        <table id="schedule-<%= room %>">
             <tr>
                 <th>S.No.</th>
                 <th>Section</th>
@@ -29,6 +29,7 @@
                 <th>Schedule</th>
                 <th>Action</th>
             </tr>
+        
             <% schedulesByRoom[room].forEach((schedule) => { %>
                 <tr>
                     <td contenteditable="false"><%= schedule.serialNo %></td>
@@ -47,115 +48,126 @@
         <form class="add-schedule-form" action="/Tools/AddSchedule" method="POST">
             <input type="hidden" name="room" value="<%= room %>">
             <input type="text" name="serialNo" placeholder="S.No">
-            <input type="text" name="section"placeholder="Section" >
+            <input type="text" name="section" placeholder="Section" >
             <input type="text" name="subject" placeholder="Subject">
             <input type="text" name="time" placeholder="Time">
             <button class="button-primary button-round" type="submit">Add Schedule</button>
         </form>
+        
+        <!-- Edit and Save buttons for each room -->
+        <button class="button-primary button-round edit-schedule" data-room="<%= room %>">Edit Schedule</button>
+        <button class="button-primary button-round save-schedule" style="display:none" data-room="<%= room %>">Save Schedule</button>
     <% } %>
-
-    <!-- Edit and Save buttons --> 
-    <button class="button-primary button-round" id="edit-schedule">Edit Schedule</button>
-    <button class="button-primary button-round" id="save-schedule" style="display:none">Save Schedule</button> 
-
+    
     <script>
-        // Get the table and the edit button
-        const scheduleTable = document.getElementById('schedule');
-        const editButton = document.getElementById('edit-schedule');
-        const saveButton = document.getElementById('save-schedule');
-
-        // Variable to track if the table is in edit mode
-        let isEditMode = false;
-
+        // Get the edit and save buttons
+        const editButtons = document.querySelectorAll('.edit-schedule');
+        const saveButtons = document.querySelectorAll('.save-schedule');
+    
+        // Variable to track if the table is in edit mode for each room
+        const isEditModeByRoom = {};
+    
         // Function to toggle the table's editable state
-        function toggleEditMode() {
-            const cells = scheduleTable.getElementsByTagName('td');
+        function toggleEditMode(isEditMode, table) {
+            const cells = table.getElementsByTagName('td');
             for (let i = 0; i < cells.length; i++) {
                 cells[i].contentEditable = isEditMode;
             }
         }
-
-        // Add an event listener to the delete buttons
-        const deleteButtons = document.getElementsByClassName('delete-btn');
-        for (const deleteButton of deleteButtons) {
-            deleteButton.addEventListener('click', () => {
-                const scheduleId = deleteButton.dataset.id;
-                deleteSchedule(scheduleId);
-            });
-        }
-
-        // Function to delete the schedule from the database
-        function deleteSchedule(scheduleId) {
-            fetch(`/Tools/DeleteSchedule/${scheduleId}`, {
-                method: 'DELETE',
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data); // You can handle the response from the server here if needed
-                // Reload the page to show the updated schedule
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error deleting schedule:', error);
-                alert('An error occurred while deleting the schedule. Please try again.');
-            });
-        }
-
-        // Add an event listener to the edit button
-        editButton.addEventListener('click', () => {
-            isEditMode = !isEditMode;
-            toggleEditMode();
-
-            // Show/hide the buttons based on the edit mode
-            if (isEditMode) {
-                editButton.style.display = 'none';
-                saveButton.style.display = 'block';
-            } else {
-                editButton.style.display = 'block';
-                saveButton.style.display = 'none';
-            }
+    
+       
+ // Add event listeners to the delete buttons
+ const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach((deleteButton) => {
+        deleteButton.addEventListener('click', () => {
+            const scheduleId = deleteButton.dataset.id;
+            deleteSchedule(scheduleId);
         });
+    });
 
-        // Add an event listener to the save button
-        saveButton.addEventListener('click', () => {
-            isEditMode = false;
-            toggleEditMode();
+    // Function to delete the schedule from the database
+    function deleteSchedule(scheduleId) {
+        fetch(`/Tools/DeleteSchedule/${scheduleId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data); // You can handle the response from the server here if needed
+            // Reload the page after successful deletion
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error deleting schedule:', error);
+            alert('An error occurred while deleting the schedule. Please try again.');
+        });
+    }
 
-            // Get the updated schedule data from the table and create an array to store it
-            const updatedSchedules = [];
-            const rows = scheduleTable.getElementsByTagName('tr');
-            for (let i = 1; i < rows.length; i++) { // Start from index 1 to skip the table header row
-                const cells = rows[i].getElementsByTagName('td');
-                const serialNo = cells[0].innerText;
-                const section = cells[1].innerText;
-                const subject = cells[2].innerText;
-                const time = cells[3].innerText;
-                const room = rows[i].getElementsByTagName('h1')[0].innerText.trim(); // Get room name from the h1 element of the row
-                updatedSchedules.push({ serialNo,section, subject, time, room });
-            }
-
-            // Send the updated schedule data to the server via a POST request
-            fetch('/Tools/UpdateSchedule', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ schedules: updatedSchedules })
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data); // You can handle the response from the server here if needed
-                // Hide the save button
-                saveButton.style.display = 'none';
-                // Show the edit button
-                editButton.style.display = 'block';
-            })
-            .catch(error => {
-                console.error('Error updating schedule data:', error);
-                alert('An error occurred while saving the schedule. Please try again.');
+        // Add event listeners to the edit buttons for each room's table
+        editButtons.forEach((editButton) => {
+            editButton.addEventListener('click', () => {
+                const roomName = editButton.getAttribute('data-room');
+                const saveButton = document.querySelector(`.save-schedule[data-room="${roomName}"]`);
+                const parentElement = editButton.parentElement; // Get the parent element of the edit button
+                const scheduleTable = parentElement.querySelector(`#schedule-${roomName}`); // Find the table inside the parent element
+                isEditModeByRoom[roomName] = !isEditModeByRoom[roomName];
+                toggleEditMode(isEditModeByRoom[roomName], scheduleTable);
+    
+                // Show/hide the buttons based on the edit mode
+                if (isEditModeByRoom[roomName]) {
+                    editButton.style.display = 'none';
+                    saveButton.style.display = 'block';
+                } else {
+                    editButton.style.display = 'block';
+                    saveButton.style.display = 'none';
+                }
             });
         });
-
+    
+        // Add an event listener to the save buttons
+        saveButtons.forEach((saveButton) => {
+            saveButton.addEventListener('click', () => {
+                const roomName = saveButton.getAttribute('data-room');
+                const parentElement = saveButton.parentElement; 
+                const scheduleTable = parentElement.querySelector(`#schedule-${roomName}`);
+                isEditModeByRoom[roomName] = false;
+                toggleEditMode(isEditModeByRoom[roomName], scheduleTable);
+    
+                // Get the updated schedule data from the table and create an array to store it
+                const updatedSchedules = [];
+                const rows = scheduleTable.getElementsByTagName('tr');
+                for (let i = 1; i < rows.length; i++) { // Start from index 1 to skip the table header row
+                    const cells = rows[i].getElementsByTagName('td');
+                    const serialNo = cells[0].contentEditable === 'true' ? cells[0].innerText : cells[0].textContent;
+                    const section = cells[1].contentEditable === 'true' ? cells[1].innerText : cells[1].textContent;
+                    const subject = cells[2].contentEditable === 'true' ? cells[2].innerText : cells[2].textContent;
+                    const time = cells[3].contentEditable === 'true' ? cells[3].innerText : cells[3].textContent;
+                    updatedSchedules.push({ serialNo, section, subject, time, room: roomName });
+                }
+    
+                // Send the updated schedule data to the server via a POST request
+                fetch('/Tools/UpdateSchedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ schedules: updatedSchedules })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data); // You can handle the response from the server here if needed
+                    // Hide the save button
+                    saveButton.style.display = 'none';
+                    // Show the edit button
+                    const editButton = document.querySelector(`.edit-schedule[data-room="${roomName}"]`);
+                    editButton.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error updating schedule data:', error);
+                    alert('An error occurred while saving the schedule. Please try again.');
+                });
+            });
+        });
+    
         // Add event listeners to the "Add Schedule" forms
         const addScheduleForms = document.getElementsByClassName('add-schedule-form');
         for (const addScheduleForm of addScheduleForms) {
@@ -166,8 +178,8 @@
                 const newRoom = addScheduleForm.querySelector('input[name="room"]').value;
                 const newSubject = addScheduleForm.querySelector('input[name="subject"]').value;
                 const newTime = addScheduleForm.querySelector('input[name="time"]').value;
-                const newSchedule = { serialNo: newSerialNo,section:newSection, room: newRoom, subject: newSubject, time: newTime };
-
+                const newSchedule = { serialNo: newSerialNo, section: newSection, room: newRoom, subject: newSubject, time: newTime };
+    
                 // Send the new schedule data to the server via a POST request
                 fetch('/Tools/AddSchedule', {
                     method: 'POST',
@@ -189,6 +201,6 @@
             });
         }
     </script>
+    
 </body>
-</html>
-
+</html> 
